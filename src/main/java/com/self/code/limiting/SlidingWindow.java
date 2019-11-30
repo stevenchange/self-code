@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @program: self-code
- * @description: 用滑动窗口的方式处理限流(QPS)
+ * @description: 用滑动窗口的方式处理限流(QPS/TPS)
  * @author: GaoBo
  * @create: 2019/10/12
  **/
@@ -107,23 +107,19 @@ public class SlidingWindow {
         SlidingWindow slidingWindow = new SlidingWindow(20, 1, 3, TimeUnit.SECONDS);
 
         for(int i = 0; i < 5; i++){
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    int count = 0;
-                    while (count < 100) {
-                        if (slidingWindow.isConcurrentPass()) {
-                            count++;
-                            System.out.println("can invoke, count: " + count + " time: " + System.currentTimeMillis() +
-                                    " thread: " + Thread.currentThread().getName());
-                        } else {
-                            System.out.println("can't invoke");
-                            break;
-                        }
+            Thread thread = new Thread(() -> {
+                int count = 0;
+                while (count < 100) {
+                    if (slidingWindow.isConcurrentPass()) {
+                        count++;
+                        System.out.println("can invoke, count: " + count + " time: " + System.currentTimeMillis() +
+                                " thread: " + Thread.currentThread().getName());
+                    } else {
+                        System.out.println("can't invoke");
+                        break;
                     }
                 }
-
-            };
+            });
 
             thread.start();
         }

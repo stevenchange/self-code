@@ -1,10 +1,7 @@
 package com.self.code.multithread;
 
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Exchanger;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -219,11 +216,122 @@ public class MultiThread {
 	/**交替按照顺序打印*/
 
 	/**交替打印奇数偶数，例如：010203040506*/
-	private int n;
-	private Lock lock = new ReentrantLock();
-	private Condition conditionZero = lock.newCondition();
-	private AtomicInteger atomicInteger = new AtomicInteger(0);
-	private volatile boolean isZero = true;
+	/**自己思考后，实现版本*/
+//	private int n;
+//	private Lock lock = new ReentrantLock();
+//	private Condition condition = lock.newCondition();
+//  private Condition conditionZero = lock.newCondition();
+//	private AtomicInteger atomicInteger = new AtomicInteger(0);
+//  private volatile boolean needZero = true;
+//
+//	public MultiThread(int n) {
+//		this.n = n;
+//	}
+//
+//	// printNumber.accept(x) outputs "x", where x is an integer.
+//	public void zero(IntConsumer printNumber) throws InterruptedException {
+//		for(int i = 1; i <= n ; i++){
+//            while (!needZero) {
+//
+//            }
+//		    try {
+//                lock.lock();
+//                printNumber.accept(0);
+//                needZero = false;
+//                conditionZero.signalAll();
+//            } finally {
+//		        lock.unlock();
+//            }
+//		}
+//	}
+//
+//	//打印偶数
+//	public void even(IntConsumer printNumber) throws InterruptedException {
+//		for(int i = 1; i <= n; i++){
+//            try{
+//                lock.lock();
+//                while(atomicInteger.intValue() % 2 != 0){
+//                    condition.await();
+//                }
+//
+//                if(i % 2 == 0){
+//                    printNumber.accept(i);
+//                    needZero = true;
+//                    conditionZero.await(1, TimeUnit.MILLISECONDS);
+//                }
+//
+//                atomicInteger.incrementAndGet();
+//                condition.signalAll();
+//
+//            } finally {
+//                lock.unlock();
+//            }
+//		}
+//	}
+//
+//	//打印奇数
+//	public void odd(IntConsumer printNumber) throws InterruptedException {
+//		for(int i = 1; i <= n; i++){
+//            try{
+//                lock.lock();
+//                while(atomicInteger.intValue() % 2 != 1){
+//                    condition.await();
+//                }
+//
+//                if(i % 2 == 1){
+//                    printNumber.accept(i);
+//                    needZero = true;
+//                    conditionZero.await(1, TimeUnit.MILLISECONDS);
+//                }
+//                atomicInteger.incrementAndGet();
+//                condition.signalAll();
+//            } finally {
+//                lock.unlock();
+//            }
+//		}
+//	}
+//
+//	public static void main(String[] args) throws InterruptedException {
+//		MultiThread multiThread = new MultiThread(10);
+//		IntConsumer intConsumer = new IntConsumer();
+//		Thread thread1 = new Thread(() -> {
+//			try{
+//				multiThread.zero(intConsumer);
+//			} catch (InterruptedException e){
+//				e.printStackTrace();
+//			}
+//		});
+//
+//		Thread thread2 = new Thread(() -> {
+//			try{
+//				multiThread.even(intConsumer);
+//			} catch (InterruptedException e){
+//				e.printStackTrace();
+//			}
+//		});
+//
+//		Thread thread3 = new Thread(() -> {
+//			try{
+//				multiThread.odd(intConsumer);
+//			} catch (InterruptedException e){
+//				e.printStackTrace();
+//			}
+//		});
+//
+//		thread1.start();
+//		thread2.start();
+//		thread3.start();
+//	}
+    /**自己思考后，实现版本*/
+	/**交替打印奇数偶数，例如：010203040506*/
+
+    /**交替打印奇数偶数，例如：010203040506*/
+    /**信号量，实现版本*/
+    private int n;
+    private Semaphore semaphore = new Semaphore(0);
+    private Exchanger<Integer> oddExchanger = new Exchanger<Integer>();
+    private Exchanger<Integer> evenExchanger = new Exchanger<Integer>();
+
 
 	public MultiThread(int n) {
 		this.n = n;
@@ -231,86 +339,52 @@ public class MultiThread {
 
 	// printNumber.accept(x) outputs "x", where x is an integer.
 	public void zero(IntConsumer printNumber) throws InterruptedException {
-		for(int i = 0; i < n ; i++){
-			try{
-				lock.lock();
-				int temp = atomicInteger.intValue();
-				System.out.println("thread zero1:"+ Thread.currentThread().getName() + " temp : "+ temp);
-				while(!isZero){
-					conditionZero.await();
-				}
-				System.out.println("thread zero2:"+ Thread.currentThread().getName() + " temp : "+ temp);
-				printNumber.accept(0);
-//				printNumber.run();
-//				System.out.println(Thread.currentThread().getName() + i);
-//				atomicInteger.incrementAndGet();
-				isZero = false;
-				conditionZero.signalAll();
-			} finally {
-				lock.unlock();
-			}
+        for(int i = 1; i <= n; i++){
 
-		}
+            printNumber.accept(0);
+
+            if(i % 2 == 0){
+                evenExchanger.exchange(i);
+            } else {
+                oddExchanger.exchange(i);
+            }
+            semaphore.acquire();
+        }
 	}
 
 	//打印偶数
 	public void even(IntConsumer printNumber) throws InterruptedException {
-		for(int i = 0; i < n; i++){
-
-			try{
-				lock.lock();
-				int temp = atomicInteger.intValue();
-				System.out.println("thread2 even1:"+ Thread.currentThread().getName() + " temp : "+ temp);
-				while(isZero){
-					conditionZero.await();
-				}
-				System.out.println("thread2 even2:"+ Thread.currentThread().getName() + " temp : "+ temp);
-//				if(i % 2 == 0){
-					printNumber.accept(1);
-//				}
-//				printNumber.run();
-//				System.out.println(Thread.currentThread().getName() + i);
-//				atomicInteger.incrementAndGet();
-				isZero = true;
-				conditionZero.signalAll();
-			} finally {
-				lock.unlock();
-			}
-		}
+	    while(true) {
+            int temp;
+            try {
+                temp = evenExchanger.exchange(0, 10, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException e) {
+                return;
+            }
+            printNumber.accept(temp);
+            semaphore.release();
+        }
 	}
 
-//	//打印奇数
-//	public void odd(IntConsumer printNumber) throws InterruptedException {
-//		for(int i = 0; i < n; i++){
-//			try{
-//				lock.lock();
-//				int temp = atomicInteger.intValue();
-//				while(temp == 0 || temp % 2 != 1){
-//					conditionOther.await();
-//				}
-//
-//				if(i % 2 == 1){
-//					printNumber.accept(i);
-//				}
-//				atomicInteger.incrementAndGet();
-//				conditionZero.signalAll();
-//			} finally {
-//				lock.unlock();
-//			}
-//		}
-//	}
+	//打印奇数
+	public void odd(IntConsumer printNumber) throws InterruptedException {
+	    while (true) {
+            int temp;
+            try {
+                temp = oddExchanger.exchange(0, 10, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException e) {
+                return;
+            }
+            printNumber.accept(temp);
+            semaphore.release();
+        }
+	}
 
 	public static void main(String[] args) throws InterruptedException {
-		MultiThread multiThread = new MultiThread(8);
+		MultiThread multiThread = new MultiThread(10);
 		IntConsumer intConsumer = new IntConsumer();
 		Thread thread1 = new Thread(() -> {
 			try{
-//				multiThread.zero(new Runnable() {
-//					@Override
-//					public void run() {
-//						System.out.println("0");
-//					}
-//				});
 				multiThread.zero(intConsumer);
 			} catch (InterruptedException e){
 				e.printStackTrace();
@@ -319,37 +393,30 @@ public class MultiThread {
 
 		Thread thread2 = new Thread(() -> {
 			try{
-//				multiThread.even(new Runnable() {
-//					@Override
-//					public void run() {
-//						System.out.println("1");
-//					}
-//				});
 				multiThread.even(intConsumer);
-			} catch (InterruptedException e){
+			} catch (Exception e){
 				e.printStackTrace();
 			}
 		});
 
-//		Thread thread3 = new Thread(() -> {
-//			try{
-//				multiThread.odd(intConsumer);
-//			} catch (InterruptedException e){
-//				e.printStackTrace();
-//			}
-//		});
+		Thread thread3 = new Thread(() -> {
+			try{
+				multiThread.odd(intConsumer);
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		});
 
 		thread1.start();
 		thread2.start();
-//		thread3.start();
+		thread3.start();
 	}
-	/**交替打印奇数偶数，例如：010203040506*/
 
 }
 
 class IntConsumer{
 
 	public void accept(int x){
-		System.out.println(x);
+		System.out.print(x);
 	}
 }
