@@ -417,6 +417,6 @@ public class MultiThread {
 class IntConsumer{
 
 	public void accept(int x){
-		System.out.print(x);
+		System.out.println(x);
 	}
 }
