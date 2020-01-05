@@ -4,7 +4,7 @@ import com.self.code.datastruct.linkarray.model.ListNode;
 
 /**
  * @program: self-code
- * @description:
+ * @description: 链表按照没K位进行反转
  * @author: GaoBo
  * @create: 2019/12/22
  **/
@@ -18,8 +18,14 @@ public class Solution {
 		ListNode end = dummy;
 
 		while (end.next != null) {
-			for (int i = 0; i < k && end != null; i++) end = end.next;
-			if (end == null) break;
+			for (int i = 0; i < k && end != null; i++) {
+				end = end.next;
+			}
+
+			if (end == null) {
+				break;
+			}
+
 			ListNode start = pre.next;
 			ListNode next = end.next;
 			end.next = null;
@@ -44,17 +50,6 @@ public class Solution {
 		return pre;
 	}
 
-	private static void addListNode(ListNode listNode, int n, int k){
-		if(n > k){
-			return;
-		}
-		if(listNode != null){
-			listNode.next = new ListNode(n);
-		}
-		n++;
-		addListNode(listNode.next, n, k);
-	}
-
 	public static void main(String[] args) {
 		ListNode head = new ListNode(1);
 		addListNode(head, 2, 9);
@@ -74,7 +69,17 @@ public class Solution {
 			System.out.println(result.val);
 			result = result.next;
 		}
+	}
 
+	private static void addListNode(ListNode listNode, int n, int k){
+		if(n > k){
+			return;
+		}
+		if(listNode != null){
+			listNode.next = new ListNode(n);
+		}
+		n++;
+		addListNode(listNode.next, n, k);
 	}
 
 }
