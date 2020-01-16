@@ -1,9 +1,6 @@
 package com.self.code.limiting;
 
-import com.sun.xml.internal.bind.annotation.OverrideAnnotationOf;
-
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
