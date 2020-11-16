@@ -73,9 +73,8 @@ public class SlidingWindow {
      * @return true or false
      */
     public boolean isPass() {
-        long curTime = System.currentTimeMillis();
-
         synchronized (lock) {
+            long curTime = System.currentTimeMillis();
             if (curTime >= period + slidingWindow[curPosition]) {
                 //赋值，将上一次调用的时间放入，保证下个窗口到来时，方便计算时间
                 slidingWindow[curPosition++] = curTime;

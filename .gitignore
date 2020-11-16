@@ -27,8 +27,3 @@
 
 ### Maven ###
 */target/**
-
-.gitignore
-src/main/java/com/self/code/design/parttern/abstract_factory/
-src/main/java/com/self/code/statemachine/squirrel/
-src/test/
